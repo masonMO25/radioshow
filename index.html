@@ -907,35 +907,36 @@ const HERO_IMAGES = [
 const HERO_ROTATE_MS = 45000;
 
 // ---------------------------------------------------------------
-// EPISODES — newest first. Put your MP3 files in an "audio" folder
-// next to index.html (or point "src" at any URL). Duplicate a block
-// below to add a new episode. durationLabel is just a fallback shown
-// until the real file loads and reports its actual length. date and
-// description are optional — leave them "" and they're skipped in
-// the display instead of showing a blank line.
+// EPISODES — newest first. Hosted on Cloudflare R2 now (not GitHub,
+// not archive.org). Duplicate a block below to add a new episode.
+// durationLabel is just a fallback shown until the real file loads
+// and reports its actual length. date and description are optional —
+// leave them "" and they're skipped in the display instead of
+// showing a blank line.
 //
 // This same list also drives Station mode (see StationController
 // below) — it plays through these episodes, in this order, on a
 // loop, synced to the real clock. No extra setup needed there.
 // ---------------------------------------------------------------
 const EPISODES = [
-  { id: "week-15", num: "016", title: "Week 15", date: "", durationLabel: "58:40", src: "https://archive.org/download/radioshow_202609/week%2015.mp3", description: "Environments - Future Sound of London; Elvis Has Left The Building - Vladmir Dubyshkin; Fock Music - Pantomiman & Fungus Funk; Waited All Night - Jamie xx; Ravedeath - East Exodus; Infatuation(Lichtbogen Dreamin Remix) - Sophie; World Class Sinner(SoFTT Live Show) - Lily Rose Depp; Ghost Voices - Virtual Self; ♥IN DA RAVE GO 4EVA N EVA♥ - Lil Bongwater; UWLSD - skee mask; Mango Feedback - Four Tet; Can't Stop Raving - Dune; N0TH1NG L3FT - DJ Clickbait; Kill Vs. Maim - Grimes" },
-  { id: "week-14", num: "015", title: "Week 14", date: "", durationLabel: "1:04:03", src: "https://archive.org/download/radioshow_202609/week%2014.mp3", description: "Afro-Harping - Dorthy Ashby; Dis kô Dis kô - Yīn Yīn; Something's Got To Give - Beastie Boys; Blue Bayou - Roy Orbison; Never Let Me Go - Cindy; Rudeboy(feat. Joey Bada$$) - CJ Fly; John McLaughlin - Miles Davis; Lam Plearn Toh Lom Nhao - Yenjit Porntawi; Space Hos - M.F. DOOM; Statesburo Blues - Taj Mahal; Right Place, Wrong Time - Dr. John; One Mile From Heaven - Bobb Trimble; Godsend - Beat Happening" },
-  { id: "week-13", num: "014", title: "Week 13", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%2013.mp3", description: "" },
-  { id: "week-12", num: "013", title: "Week 12", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%2012.mp3", description: "" },
-  { id: "week-11", num: "012", title: "Week 11", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%2011.mp3", description: "" },
-  { id: "week-10", num: "011", title: "Week 10", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%2010.mp3", description: "" },
-  { id: "week-9", num: "010", title: "Week 9", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%209.mp3", description: "" },
-  { id: "week-8", num: "009", title: "Week 8", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%208.mp3", description: "" },
-  { id: "week-7", num: "008", title: "Week 7", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%207.mp3", description: "" },
-  { id: "week-6", num: "007", title: "Week 6", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%206.mp3", description: "" },
-  { id: "week-5", num: "006", title: "Week 5", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%205.mp3", description: "" },
-  { id: "week-4", num: "005", title: "Week 4", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%204.mp3", description: "" },
-  { id: "week-3", num: "004", title: "Week 3", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%203.mp3", description: "" },
-  { id: "week-2", num: "003", title: "Week 2", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%202.mp3", description: "" },
-  { id: "week-1", num: "002", title: "Week 1", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%201.mp3", description: "" },
-  { id: "christmas-2025", num: "001", title: "Christmas Show 2025", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/chistmas%20show%202025.mp3", description: "" },
-  { id: "dj-set", num: "000", title: "DJ Set", date: "2026-08-14", durationLabel: "1:02:15", src: "https://archive.org/download/radioshow_202609/djset.mp3", description: "" }
+  { id: "while-you-wait", num: "018", title: "While You Wait", date: "", durationLabel: "", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/while%20you%20wait.mp3", description: "" },
+  { id: "week-15", num: "017", title: "Week 15", date: "", durationLabel: "58:40", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/week%2015.mp3", description: "Environments - Future Sound of London; Elvis Has Left The Building - Vladmir Dubyshkin; Fock Music - Pantomiman & Fungus Funk; Waited All Night - Jamie xx; Ravedeath - East Exodus; Infatuation(Lichtbogen Dreamin Remix) - Sophie; World Class Sinner(SoFTT Live Show) - Lily Rose Depp; Ghost Voices - Virtual Self; ♥IN DA RAVE GO 4EVA N EVA♥ - Lil Bongwater; UWLSD - skee mask; Mango Feedback - Four Tet; Can't Stop Raving - Dune; N0TH1NG L3FT - DJ Clickbait; Kill Vs. Maim - Grimes" },
+  { id: "week-14", num: "016", title: "Week 14", date: "", durationLabel: "1:04:03", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/week%2014.mp3", description: "Afro-Harping - Dorthy Ashby; Dis kô Dis kô - Yīn Yīn; Something's Got To Give - Beastie Boys; Blue Bayou - Roy Orbison; Never Let Me Go - Cindy; Rudeboy(feat. Joey Bada$$) - CJ Fly; John McLaughlin - Miles Davis; Lam Plearn Toh Lom Nhao - Yenjit Porntawi; Space Hos - M.F. DOOM; Statesburo Blues - Taj Mahal; Right Place, Wrong Time - Dr. John; One Mile From Heaven - Bobb Trimble; Godsend - Beat Happening" },
+  { id: "week-13", num: "015", title: "Week 13", date: "", durationLabel: "", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/week%2013.mp3", description: "" },
+  { id: "week-12", num: "014", title: "Week 12", date: "", durationLabel: "", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/week%2012.mp3", description: "" },
+  { id: "week-11", num: "013", title: "Week 11", date: "", durationLabel: "", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/week%2011.mp3", description: "" },
+  { id: "week-10", num: "012", title: "Week 10", date: "", durationLabel: "", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/week%2010.mp3", description: "" },
+  { id: "week-9", num: "011", title: "Week 9", date: "", durationLabel: "", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/week%209.mp3", description: "" },
+  { id: "week-8", num: "010", title: "Week 8", date: "", durationLabel: "", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/week%208.mp3", description: "" },
+  { id: "week-7", num: "009", title: "Week 7", date: "", durationLabel: "", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/week%207.mp3", description: "" },
+  { id: "week-6", num: "008", title: "Week 6", date: "", durationLabel: "", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/week%206.mp3", description: "" },
+  { id: "week-5", num: "007", title: "Week 5", date: "", durationLabel: "", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/week%205.mp3", description: "" },
+  { id: "week-4", num: "006", title: "Week 4", date: "", durationLabel: "", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/week%204.mp3", description: "" },
+  { id: "week-3", num: "005", title: "Week 3", date: "", durationLabel: "", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/week%203.mp3", description: "" },
+  { id: "week-2", num: "004", title: "Week 2", date: "", durationLabel: "", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/week%202.mp3", description: "" },
+  { id: "week-1", num: "003", title: "Week 1", date: "", durationLabel: "", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/week%201.mp3", description: "" },
+  { id: "christmas-2024", num: "002", title: "Christmas Show 2024", date: "", durationLabel: "", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/chistmas%20show%202024.mp3", description: "" },
+  { id: "dj-set", num: "001", title: "DJ Set", date: "2026-08-14", durationLabel: "1:02:15", src: "https://pub-24a4ac729cd04387bb0f552dbf7826b0.r2.dev/djset.mp3", description: "" }
 ];
 
 // ---- Ticker.js ----
@@ -1246,6 +1247,14 @@ class EpisodesDrawer {
 // class doesn't know HOW station mode computes what to play, it just
 // asks via those two callbacks instead of doing its own archive-style
 // auto-advance when mode is "station".
+//
+// Two reliability features on top of basic playback:
+//  - Duration probes (used for the display + Station's sync math) are
+//    started 200ms apart instead of all 18 at once, and retry twice
+//    with backoff before giving up on a file.
+//  - If the actual playback element fails to load (network hiccup,
+//    host briefly unhappy), it quietly retries up to twice before
+//    ever showing the person an error.
 class AudioPlayer {
   constructor({ episodes, elements, storageKey = 'nightSignalPlayer' }){
     this.episodes = episodes;
@@ -1258,6 +1267,8 @@ class AudioPlayer {
     this.isScrubbing = false;
     this.durationCache = {};    // formatted strings, e.g. "58:40" — for display
     this.durationSeconds = {};  // raw numbers — for Station mode's math
+    this._loadRetries = 0;
+    this._lastAutoplay = false;
 
     this.mode = 'archive';
 
@@ -1310,6 +1321,8 @@ class AudioPlayer {
 
   loadEpisode(index, autoplay, startPosition){
     this.currentIndex = index;
+    this._loadRetries = 0;
+    this._lastAutoplay = autoplay;
     const ep = this.episodes[index];
     const { audio, npTitle, npSub, npError, scrub, timeTotal } = this.el;
 
@@ -1360,7 +1373,7 @@ class AudioPlayer {
       this.el.timeTotal.textContent = formatTime(audio.duration);
     });
     audio.addEventListener('ended', () => this._onEnded());
-    audio.addEventListener('error', () => this._showError());
+    audio.addEventListener('error', () => this._onAudioError());
 
     scrub.addEventListener('mousedown', () => this.isScrubbing = true);
     scrub.addEventListener('touchstart', () => this.isScrubbing = true);
@@ -1427,6 +1440,23 @@ class AudioPlayer {
     }
   }
 
+  _onAudioError(){
+    if (this._loadRetries < 2){
+      this._loadRetries++;
+      const ep = this.episodes[this.currentIndex];
+      const wasAutoplay = this._lastAutoplay;
+      setTimeout(() => {
+        this.el.audio.src = ep.src;
+        this.el.audio.load();
+        if (wasAutoplay){
+          this.el.audio.play().catch(() => {});
+        }
+      }, 900 * this._loadRetries);
+      return;
+    }
+    this._showError();
+  }
+
   _showError(){
     const ep = this.episodes[this.currentIndex];
     const { npError } = this.el;
@@ -1478,25 +1508,32 @@ class AudioPlayer {
   }
 
   _probeDurations(){
-    this.episodes.forEach(ep => {
-      const probe = new Audio();
-      probe.preload = 'metadata';
-      probe.addEventListener('loadedmetadata', () => {
-        const seconds = probe.duration;
-        const label = formatTime(seconds);
-        this.durationCache[ep.id] = label;
-        this.durationSeconds[ep.id] = seconds;
-        if (this.onDurationResolved) this.onDurationResolved(ep.id, label);
-        if (this.episodes[this.currentIndex].id === ep.id){
-          this.el.timeTotal.textContent = label;
-        }
-      });
-      probe.addEventListener('error', () => {
-        // known-bad: resolved, but excluded from Station's loop math
-        this.durationSeconds[ep.id] = 0;
-      });
-      probe.src = ep.src;
+    this.episodes.forEach((ep, i) => {
+      setTimeout(() => this._probeOne(ep, 0), i * 200);
     });
+  }
+
+  _probeOne(ep, attempt){
+    const probe = new Audio();
+    probe.preload = 'metadata';
+    probe.addEventListener('loadedmetadata', () => {
+      const seconds = probe.duration;
+      const label = formatTime(seconds);
+      this.durationCache[ep.id] = label;
+      this.durationSeconds[ep.id] = seconds;
+      if (this.onDurationResolved) this.onDurationResolved(ep.id, label);
+      if (this.episodes[this.currentIndex].id === ep.id){
+        this.el.timeTotal.textContent = label;
+      }
+    });
+    probe.addEventListener('error', () => {
+      if (attempt < 2){
+        setTimeout(() => this._probeOne(ep, attempt + 1), 1200 * (attempt + 1));
+      } else {
+        this.durationSeconds[ep.id] = 0; // give up quietly, excluded from Station math
+      }
+    });
+    probe.src = ep.src;
   }
 }
 
@@ -1553,7 +1590,7 @@ class StationController {
     if (this._pendingRetry) clearTimeout(this._pendingRetry);
     this.player.setMode('archive');
     this.el.toggleBtn.setAttribute('aria-pressed', 'false');
-    this.el.toggleLabel.textContent = 'Tune In';
+    this.el.toggleLabel.textContent = 'Listen to the Radio';
     this.el.nowPlaying.classList.remove('station');
     this.player.el.audio.pause();
   }
