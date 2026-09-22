@@ -1773,7 +1773,7 @@ player.onEpisodeChange = (episode, index) => {
 
 player.onPlayStateChange = (isPlaying, episode) => {
   onAir.setLive(isPlaying);
-  ticker.set(isPlaying ? ('Now playing — ' + episode.title) : CONFIG.tagline);
+  ticker.set(isPlaying ? ('Now playing — ' + episode.title + '     Be Here Now     ') : CONFIG.tagline);
   mediaSession.updatePlaybackState(isPlaying);
 };
 
