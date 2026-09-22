@@ -414,11 +414,13 @@ input[type="range"].scrub::-moz-range-thumb{
   border: none;
   color: var(--text-muted);
   border-radius: 10px;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   display:flex;
+  flex-direction: column;
   align-items:center;
   justify-content:center;
+  gap: 2px;
   cursor: pointer;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 0.68rem;
@@ -429,9 +431,9 @@ input[type="range"].scrub::-moz-range-thumb{
 
 .icon-btn:hover{ color: var(--text); background: rgba(255,255,255,0.12); }
 
-.icon-btn svg{ width: 18px; height: 18px; position: absolute; opacity: 0.55; }
+.icon-btn svg{ width: 15px; height: 15px; opacity: 0.85; }
 
-.icon-btn span{ position: relative; z-index: 1; }
+.icon-btn span{ font-size: 0.6rem; font-weight: 700; opacity: 0.95; line-height: 1; }
 
 .speed-btn{
   width: auto;
