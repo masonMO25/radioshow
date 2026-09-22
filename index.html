@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>radio show — player</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%BB%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:type" content="website">
+<meta property="og:title" content="radio show">
+<meta property="og:description" content="Full-length sets, recorded whenever the mood strikes.">
+<meta property="og:image" content="https://YOUR-USERNAME.github.io/YOUR-REPO/images/cover.jpg">
+<meta property="og:url" content="https://YOUR-USERNAME.github.io/YOUR-REPO/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="radio show">
+<meta name="twitter:description" content="Full-length sets, recorded whenever the mood strikes.">
+<meta name="twitter:image" content="https://YOUR-USERNAME.github.io/YOUR-REPO/images/cover.jpg">
+<style>
+:root{
+  --bg: #06070a;
+  --surface: #10131a;
+  --surface-2: #1a1e27;
+  --accent: #7fd1c9;
+  --accent-soft: rgba(127,209,201,0.16);
+  --onair: #e2703a;
+  --onair-soft: rgba(226,112,58,0.25);
+  --text: #f3f1ea;
+  --text-muted: #7b8089;
+  --border: rgba(243,241,234,0.09);
+  --track: rgba(255,255,255,0.14);
+}
+
+.visually-hidden{
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+*{ box-sizing: border-box; }
+
+html, body{ height: 100%; }
+html{ scroll-padding-top: env(safe-area-inset-top, 0px); }
+
+body{
+  margin:0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Masthead + ticker ---------- */
+
+.masthead{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex: none;
+}
+
+.masthead-wordmark{
+  font-family: 'Big Shoulders Display', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.5px;
+}
+
+.masthead-right{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.station-toggle{
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(127,209,201,0.32);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.station-toggle:hover{ background: rgba(127,209,201,0.26); }
+
+.station-toggle[aria-pressed="true"]{
+  background: var(--onair);
+  border-color: var(--onair);
+  color: #0a0e12;
+}
+
+.station-toggle-dot{
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+  flex: none;
+}
+
+.station-toggle[aria-pressed="true"] .station-toggle-dot{
+  opacity: 1;
+  animation: pulse 1.6s ease-out infinite;
+}
+
+.ticker{
+  overflow: hidden;
+  white-space: nowrap;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 0;
+  flex: none;
+}
+
+.ticker-track{
+  display: inline-flex;
+  animation: ticker-scroll 22s linear infinite;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.76rem;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+@keyframes ticker-scroll{
+  from{ transform: translateX(0); }
+  to{ transform: translateX(-50%); }
+}
+
+@media (min-width: 700px){
+  .masthead{ padding: 16px 24px; }
+}
+
+/* ---------- Full-bleed stage ---------- */
+
+.stage{
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 440px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.hero-img{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 15% 20%;
+  transform: scale(1.05);
+  transition: transform 20s ease-in-out, opacity 1.1s ease;
+  will-change: transform, opacity;
+}
+
+.hero-scrim{
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(6,7,10,0.92), rgba(6,7,10,0.18) 48%, rgba(6,7,10,0) 68%);
+  pointer-events: none;
+}
+
+.drawer-toggle{
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16,19,26,0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(243,241,234,0.14);
+  border-radius: 999px;
+  padding: 9px 16px 9px 12px;
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.76rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+
+.drawer-toggle svg{ width: 16px; height: 16px; opacity: 0.8; }
+
+/* ---------- Now playing — full-width docked bar ---------- */
+
+.now-playing{
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 14px 20px;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  background: rgba(10,12,16,0.42);
+  backdrop-filter: blur(26px) saturate(170%);
+  -webkit-backdrop-filter: blur(26px) saturate(170%);
+  border-top: 1px solid rgba(255,255,255,0.09);
+  box-shadow: 0 -18px 50px rgba(0,0,0,0.35);
+}
+
+.np-primary{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.np-thumb{
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.np-thumb img{ width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.play-btn{
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #0a0e12;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(127,209,201,0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.play-btn:hover{ box-shadow: 0 8px 22px rgba(127,209,201,0.5); }
+.play-btn:active{ transform: scale(0.94); }
+
+.play-btn svg{ width: 18px; height: 18px; }
+
+.np-meta{ min-width: 0; }
+
+.np-title{
+  font-family: 'Big Shoulders Display', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.1;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.np-sub{
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.live-badge{
+  display: none;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.6px;
+  color: var(--onair);
+  border: 1px solid rgba(226,112,58,0.4);
+  background: var(--onair-soft);
+  border-radius: 999px;
+  padding: 4px 10px 4px 8px;
+}
+
+.live-badge-dot{
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 1.6s ease-out infinite;
+}
+
+.now-playing.station .live-badge{ display: flex; }
+
+.now-playing.station .np-transport input.scrub,
+.now-playing.station .np-transport #backBtn,
+.now-playing.station .np-transport #fwdBtn{
+  display: none;
+}
+
+.bars{
+  display:flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 16px;
+  flex: none;
+  margin-left: 2px;
+}
+
+.bars span{
+  width: 3px;
+  background: var(--accent);
+  opacity: 0.35;
+  height: 30%;
+  border-radius: 2px;
+}
+
+.now-playing.playing .bars span{
+  animation: bar 1.1s ease-in-out infinite;
+  opacity: 0.85;
+}
+
+.bars span:nth-child(1){ animation-delay: -0.9s; }
+.bars span:nth-child(2){ animation-delay: -0.6s; }
+.bars span:nth-child(3){ animation-delay: -1.1s; }
+.bars span:nth-child(4){ animation-delay: -0.3s; }
+.bars span:nth-child(5){ animation-delay: -0.75s; }
+
+@keyframes bar{
+  0%, 100%{ height: 25%; }
+  50%{ height: 100%; }
+}
+
+.np-transport{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 260px;
+  min-width: 180px;
+}
+
+.scrub-row{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.time{
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  flex: none;
+  width: 38px;
+}
+
+.time.end{ text-align: right; }
+
+input[type="range"].scrub{
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--accent) 0%, var(--accent) 0%, var(--track) 0%, var(--track) 100%);
+  outline: none;
+}
+
+input[type="range"].scrub::-webkit-slider-thumb{
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: none;
+}
+
+input[type="range"].scrub::-moz-range-thumb{
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: none;
+}
+
+.icon-btn{
+  background: rgba(255,255,255,0.06);
+  border: none;
+  color: var(--text-muted);
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  position: relative;
+  flex: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.icon-btn:hover{ color: var(--text); background: rgba(255,255,255,0.12); }
+
+.icon-btn svg{ width: 18px; height: 18px; position: absolute; opacity: 0.55; }
+
+.icon-btn span{ position: relative; z-index: 1; }
+
+.speed-btn{
+  width: auto;
+  padding: 0 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+}
+
+.np-extra{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  flex: none;
+}
+
+.volume-wrap{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+}
+
+.volume-wrap svg{ width: 16px; height: 16px; color: var(--text-muted); flex: none; }
+
+input[type="range"].vol{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 70px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--track);
+  outline: none;
+}
+
+input[type="range"].vol::-webkit-slider-thumb{
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  cursor: pointer;
+  border: none;
+}
+
+.np-error{
+  display:none;
+  flex-basis: 100%;
+  order: 99;
+  font-size: 0.8rem;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.np-error.show{ display:block; }
+
+@media (max-width: 480px){
+  .bars{ display: none; }
+  input[type="range"].vol{ width: 48px; }
+  .station-toggle span.station-toggle-label{ display: none; }
+}
+
+/* ---------- Episodes drawer ---------- */
+
+.episodes-drawer{
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  height: 100dvh;
+  width: min(380px, 88vw);
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  padding-top: calc(20px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+.episodes-drawer.open{ transform: translateX(0); }
+
+.drawer-header{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex: none;
+}
+
+.drawer-header h2{
+  font-family: 'Big Shoulders Display', sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.drawer-close{
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.drawer-close:hover{ color: var(--text); }
+
+.drawer-credit{
+  margin-top: 20px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.drawer-backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 55;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.drawer-backdrop.show{ opacity: 1; pointer-events: auto; }
+
+.on-air{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.on-air-dot{
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.4;
+}
+
+.on-air.live .on-air-dot{
+  background: var(--onair);
+  opacity: 1;
+  box-shadow: 0 0 0 0 var(--onair-soft);
+  animation: pulse 1.8s ease-out infinite;
+}
+
+.on-air.live{ color: var(--onair); }
+
+@keyframes pulse{
+  0%{ box-shadow: 0 0 0 0 rgba(226,112,58,0.35); }
+  70%{ box-shadow: 0 0 0 8px rgba(226,112,58,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(226,112,58,0); }
+}
+
+/* ---------- Episode list ---------- */
+
+.episode-list{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+  flex: 1;
+}
+
+.episode-list li{
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.episode{
+  display:flex;
+  gap: 14px;
+  align-items: baseline;
+  padding: 16px 4px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+
+.episode:hover{ background: var(--surface-2); border-radius: 10px; }
+
+.episode-download{
+  flex: none;
+  text-decoration: none;
+}
+
+.episode-num{
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  flex: none;
+  width: 30px;
+  padding-top: 2px;
+}
+
+.episode.active .episode-num{ color: var(--accent); }
+
+.episode-body{ flex: 1; min-width: 0; }
+
+.episode-title-row{
+  display:flex;
+  align-items:baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.episode-title{
+  font-size: 0.98rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.episode.active .episode-title{ color: var(--accent); }
+
+.episode-duration{
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  flex: none;
+}
+
+.episode-desc{
+  margin: 4px 0 0;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.episode-date{
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+}
+
+:focus-visible{
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.episode-tracklist{
+  list-style: none;
+  counter-reset: track;
+  margin: 8px 0 0;
+  padding: 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.episode-tracklist li{
+  counter-increment: track;
+}
+
+.episode-tracklist li::before{
+  content: counter(track) ". ";
+  color: var(--text-muted);
+  opacity: 0.55;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+}
+
+.track-title{ color: var(--text); font-weight: 500; }
+
+.track-artist{ color: var(--text-muted); }
+.track-artist::before{ content: " — "; }
+
+.episode-extra{
+  flex-basis: 100%;
+  padding: 0 4px 14px 48px;
+}
+
+.tracklist-toggle{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+}
+
+.tracklist-toggle:hover{ color: var(--text); }
+
+.tracklist-toggle .chevron{
+  width: 12px;
+  height: 12px;
+  transition: transform 0.2s ease;
+}
+
+.tracklist-toggle[aria-expanded="true"] .chevron{
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce){
+  .bars span, .on-air-dot, .ticker-track, .station-toggle-dot, .live-badge-dot{ animation: none !important; }
+  .hero-img{ transition: none !important; }
+  .now-playing.playing .bars span{ height: 60%; opacity: 0.7; }
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <span class="masthead-wordmark">radio show</span>
+  <div class="masthead-right">
+    <button class="station-toggle" id="stationToggle" aria-pressed="false">
+      <span class="station-toggle-dot"></span>
+      <span class="station-toggle-label">Listen to the Radio</span>
+    </button>
+    <div class="on-air" id="onAir">
+      <span class="on-air-dot"></span>
+      <span id="onAirLabel">Off air</span>
+    </div>
+  </div>
+</header>
+
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<main class="stage">
+  <h1 class="visually-hidden page-heading">radio show</h1>
+  <img class="hero-img" id="heroImgA" src="images/cover.jpg" alt="radio show, a night city skyline">
+  <img class="hero-img" id="heroImgB" src="" alt="" aria-hidden="true" style="opacity:0">
+  <div class="hero-scrim" aria-hidden="true"></div>
+
+  <button class="drawer-toggle" id="drawerToggle" aria-expanded="false" aria-controls="episodesDrawer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    Episodes
+  </button>
+
+  <section class="now-playing" id="nowPlaying">
+    <div class="np-primary">
+      <div class="np-thumb">
+        <img src="images/cover.jpg" alt="" aria-hidden="true">
+      </div>
+      <button class="play-btn" id="playBtn" aria-label="Play">
+        <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        <svg id="pauseIcon" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+      </button>
+      <div class="np-meta">
+        <p class="np-title" id="npTitle">—</p>
+        <p class="np-sub" id="npSub">—</p>
+      </div>
+      <span class="live-badge" id="liveBadge"><span class="live-badge-dot"></span>LIVE</span>
+      <div class="bars" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <div class="np-transport">
+      <button class="icon-btn" id="backBtn" aria-label="Back 15 seconds">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        <span>15</span>
+      </button>
+
+      <div class="scrub-row">
+        <span class="time" id="timeElapsed">0:00</span>
+        <input type="range" class="scrub" id="scrub" min="0" max="100" value="0" step="0.1" aria-label="Seek">
+        <span class="time end" id="timeTotal">0:00</span>
+      </div>
+
+      <button class="icon-btn" id="fwdBtn" aria-label="Forward 15 seconds">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:scaleX(-1)"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        <span>15</span>
+      </button>
+    </div>
+
+    <div class="np-extra">
+      <button class="icon-btn speed-btn" id="speedBtn" aria-label="Playback speed">1×</button>
+      <div class="volume-wrap">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 9v6h4l5 5V4L9 9H5z"/></svg>
+        <input type="range" class="vol" id="volume" min="0" max="1" step="0.01" value="1" aria-label="Volume">
+      </div>
+    </div>
+
+    <p class="np-error" id="npError"></p>
+  </section>
+</main>
+
+
+<aside class="episodes-drawer" id="episodesDrawer" aria-label="Episode archive">
+  <div class="drawer-header">
+    <h2>Episodes</h2>
+    <button class="drawer-close" id="drawerClose" aria-label="Close episodes">×</button>
+  </div>
+  <ul class="episode-list" id="episodeList"></ul>
+  <p class="drawer-credit">MP3s</p>
+</aside>
+
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+<audio id="audio" preload="metadata"></audio>
+
+<script>
+// ---- utils.js ----
+// Small shared helpers used by more than one class.
+
+function formatTime(sec){
+  if (!isFinite(sec) || sec < 0) return "0:00";
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = Math.floor(sec % 60);
+  if (h > 0){
+    return h + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+  }
+  return m + ":" + String(s).padStart(2, "0");
+}
+
+// Splits a "Track - Artist; Track - Artist; ..." description into a
+// real tracklist. Returns null if the text doesn't look like one
+// (so a plain sentence like "DJ Set." still displays normally).
+function parseTracklist(description){
+  if (!description) return null;
+  const parts = description.split(';').map(s => s.trim()).filter(Boolean);
+  if (parts.length < 2) return null;
+  if (parts[0].indexOf(' - ') === -1) return null;
+  return parts.map(part => {
+    const idx = part.indexOf(' - ');
+    if (idx === -1) return { title: part, artist: '' };
+    return { title: part.slice(0, idx).trim(), artist: part.slice(idx + 3).trim() };
+  });
+}
+
+function formatDate(dateStr){
+  const d = new Date(dateStr + "T00:00:00");
+  if (isNaN(d)) return dateStr;
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function randomBetween(min, max){
+  return Math.random() * (max - min) + min;
+}
+
+// ---- config.js ----
+// ---------------------------------------------------------------
+// SHOW SETTINGS — edit these
+// ---------------------------------------------------------------
+const CONFIG = {
+  showName: "radio show",
+  tagline: "full-length radio shows  -  whenever the mood strikes."
+};
+
+// ---------------------------------------------------------------
+// HERO IMAGES — the background art on the main page. One picks at
+// random every time the page loads, then rotates to a new random one
+// every HERO_ROTATE_MS. List just one path to disable rotation.
+// Set HERO_ROTATE_MS to 0 to only randomize on load (no auto-rotate).
+// ---------------------------------------------------------------
+const HERO_IMAGES = [
+  "images/cover.gif",
+  "images/coververtical.gif",
+  "images/coverorbit.gif",
+  "images/coverwhisper.gif"
+];
+const HERO_ROTATE_MS = 45000;
+
+// ---------------------------------------------------------------
+// EPISODES — newest first. Put your MP3 files in an "audio" folder
+// next to index.html (or point "src" at any URL). Duplicate a block
+// below to add a new episode. durationLabel is just a fallback shown
+// until the real file loads and reports its actual length. date and
+// description are optional — leave them "" and they're skipped in
+// the display instead of showing a blank line.
+//
+// This same list also drives Station mode (see StationController
+// below) — it plays through these episodes, in this order, on a
+// loop, synced to the real clock. No extra setup needed there.
+// ---------------------------------------------------------------
+const EPISODES = [
+  { id: "week-15", num: "016", title: "Week 15", date: "2026-05-02", durationLabel: "58:40", src: "https://archive.org/download/radioshow_202609/week%2015.mp3", description: "Environments - Future Sound of London; Elvis Has Left The Building - Vladmir Dubyshkin; Fock Music - Pantomiman & Fungus Funk; Waited All Night - Jamie xx; Ravedeath - East Exodus; Infatuation(Lichtbogen Dreamin Remix) - Sophie; World Class Sinner(SoFTT Live Show) - Lily Rose Depp; Ghost Voices - Virtual Self; ♥IN DA RAVE GO 4EVA N EVA♥ - Lil Bongwater; UWLSD - skee mask; Mango Feedback - Four Tet; Can't Stop Raving - Dune; N0TH1NG L3FT - DJ Clickbait; Kill Vs. Maim - Grimes" },
+  { id: "week-14", num: "015", title: "Week 14", date: "2026-02-19", durationLabel: "1:04:03", src: "https://archive.org/download/radioshow_202609/week%2014.mp3", description: "Afro-Harping - Dorthy Ashby; Dis kô Dis kô - Yīn Yīn; Something's Got To Give - Beastie Boys; Blue Bayou - Roy Orbison; Never Let Me Go - Cindy; Rudeboy(feat. Joey Bada$$) - CJ Fly; John McLaughlin - Miles Davis; Lam Plearn Toh Lom Nhao - Yenjit Porntawi; Space Hos - M.F. DOOM; Statesburo Blues - Taj Mahal; Right Place, Wrong Time - Dr. John; One Mile From Heaven - Bobb Trimble; Godsend - Beat Happening" },
+  { id: "week-13", num: "014", title: "Week 13", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%2013.mp3", description: "" },
+  { id: "week-12", num: "013", title: "Week 12", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%2012.mp3", description: "" },
+  { id: "week-11", num: "012", title: "Week 11", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%2011.mp3", description: "" },
+  { id: "week-10", num: "011", title: "Week 10", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%2010.mp3", description: "" },
+  { id: "week-9", num: "010", title: "Week 9", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%209.mp3", description: "" },
+  { id: "week-8", num: "009", title: "Week 8", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%208.mp3", description: "" },
+  { id: "week-7", num: "008", title: "Week 7", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%207.mp3", description: "" },
+  { id: "week-6", num: "007", title: "Week 6", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%206.mp3", description: "" },
+  { id: "week-5", num: "006", title: "Week 5", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%205.mp3", description: "" },
+  { id: "week-4", num: "005", title: "Week 4", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%204.mp3", description: "" },
+  { id: "week-3", num: "004", title: "Week 3", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%203.mp3", description: "" },
+  { id: "week-2", num: "003", title: "Week 2", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%202.mp3", description: "" },
+  { id: "week-1", num: "002", title: "Week 1", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/week%201.mp3", description: "" },
+  { id: "christmas-2025", num: "001", title: "Christmas Show 2025", date: "", durationLabel: "", src: "https://archive.org/download/radioshow_202609/chistmas%20show%202025.mp3", description: "" },
+  { id: "dj-set", num: "000", title: "DJ Set", date: "2026-08-14", durationLabel: "1:02:15", src: "https://archive.org/download/radioshow_202609/djset.mp3", description: "" }
+];
+
+// ---- Ticker.js ----
+// The scrolling text strip under the masthead. Repeats the text as
+// many times as needed to fill the bar's actual width, so short text
+// (like "Now playing — X") scrolls edge-to-edge instead of leaving a
+// gap. Re-measures on window resize so it stays correct if the bar
+// changes width.
+class Ticker {
+  constructor(trackEl){
+    this.track = trackEl;
+    this.bar = trackEl.closest('.ticker') || trackEl.parentElement;
+    this._lastText = null;
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (this._lastText !== null) this.set(this._lastText);
+      }, 150);
+    });
+  }
+
+  set(text){
+    this._lastText = text;
+    const unit = text + " \u2022 ";
+    const unitWidth = this._measure(unit);
+    const barWidth = this.bar ? this.bar.clientWidth : window.innerWidth;
+    const repeats = Math.max(1, Math.ceil(barWidth / unitWidth) + 1);
+    const half = unit.repeat(repeats);
+    this.track.innerHTML = "<span>" + half + "</span><span>" + half + "</span>";
+  }
+
+  _measure(text){
+    const style = window.getComputedStyle(this.track);
+    const probe = document.createElement('span');
+    probe.style.position = 'absolute';
+    probe.style.visibility = 'hidden';
+    probe.style.whiteSpace = 'nowrap';
+    probe.style.fontFamily = style.fontFamily;
+    probe.style.fontSize = style.fontSize;
+    probe.style.fontWeight = style.fontWeight;
+    probe.style.letterSpacing = style.letterSpacing;
+    probe.textContent = text;
+    document.body.appendChild(probe);
+    const width = probe.offsetWidth;
+    probe.remove();
+    return width || 1;
+  }
+}
+
+// ---- OnAirIndicator.js ----
+// The small "On air / Off air" pill in the top-right of the masthead.
+class OnAirIndicator {
+  constructor(rootEl, labelEl){
+    this.root = rootEl;
+    this.label = labelEl;
+  }
+
+  setLive(isLive){
+    this.root.classList.toggle('live', isLive);
+    this.label.textContent = isLive ? 'On air' : 'Off air';
+  }
+}
+
+// ---- HeroDrift.js ----
+
+// Slow, randomized zoom + pan on the hero photo. Picks a new random
+// target every cycle and lets a CSS transition drift there, so it
+// never repeats the same pattern twice. Respects prefers-reduced-motion.
+// Accepts one image or a list of images (kept in sync, useful when
+// crossfading between two stacked hero layers).
+class HeroDrift {
+  constructor(imgEls, options = {}){
+    this.imgs = Array.isArray(imgEls) ? imgEls : (imgEls ? [imgEls] : []);
+    this.scaleRange = options.scaleRange || [1.05, 1.9];
+    this.xRange = options.xRange || [-2.5, 2.5];
+    this.yRange = options.yRange || [-1.5, 1.5];
+    this.durationRange = options.durationRange || [8, 14];
+    this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this._timer = null;
+  }
+
+  start(){
+    if (!this.imgs.length || this.reducedMotion) return;
+    this._tick();
+  }
+
+  stop(){
+    if (this._timer) clearTimeout(this._timer);
+  }
+
+  _tick(){
+    const [sMin, sMax] = this.scaleRange;
+    const [xMin, xMax] = this.xRange;
+    const [yMin, yMax] = this.yRange;
+    const [dMin, dMax] = this.durationRange;
+
+    const scale = randomBetween(sMin, sMax);
+    const x = randomBetween(xMin, xMax);
+    const y = randomBetween(yMin, yMax);
+    const duration = randomBetween(dMin, dMax);
+    const transform = 'scale(' + scale.toFixed(3) + ') translate(' + x.toFixed(2) + '%, ' + y.toFixed(2) + '%)';
+
+    this.imgs.forEach(img => {
+      img.style.transitionDuration = duration.toFixed(1) + 's, 1.1s';
+      img.style.transform = transform;
+    });
+
+    this._timer = setTimeout(() => this._tick(), duration * 1000);
+  }
+}
+
+// ---- HeroRotator.js ----
+
+// Swaps the hero image for a new random one, either on load or on a
+// timer, crossfading between two stacked <img> layers so it never
+// hard-cuts. Preloads the next image before fading it in.
+class HeroRotator {
+  constructor(images, elements, intervalMs = 45000){
+    this.images = images;
+    this.front = elements.front;
+    this.back = elements.back;
+    this.intervalMs = intervalMs;
+    this.current = null;
+    this._timer = null;
+  }
+
+  _pickNext(){
+    if (this.images.length <= 1) return this.images[0];
+    let next;
+    do {
+      next = this.images[Math.floor(Math.random() * this.images.length)];
+    } while (next === this.current);
+    return next;
+  }
+
+  start(){
+    if (!this.images.length) return;
+    this.current = this._pickNext();
+    this.front.src = this.current;
+    if (this.intervalMs > 0 && this.images.length > 1){
+      this._timer = setInterval(() => this._rotate(), this.intervalMs);
+    }
+  }
+
+  _rotate(){
+    const next = this._pickNext();
+    const preload = new Image();
+    preload.onload = () => {
+      this.back.src = next;
+      this.back.style.opacity = '1';
+      this.front.style.opacity = '0';
+      setTimeout(() => {
+        const oldFront = this.front;
+        this.front = this.back;
+        this.back = oldFront;
+        this.current = next;
+      }, 1150);
+    };
+    preload.src = next;
+  }
+
+  stop(){
+    if (this._timer) clearInterval(this._timer);
+  }
+}
+
+// ---- EpisodesDrawer.js ----
+
+// The slide-out "Episodes" panel: open/close behavior, and rendering
+// the list of episodes. Doesn't know anything about audio playback
+// itself — it just reports which episode was clicked via onSelect.
+class EpisodesDrawer {
+  constructor({ episodes, elements }){
+    this.episodes = episodes;
+    this.el = elements; // { toggleBtn, closeBtn, drawer, backdrop, list }
+
+    // Set this from outside: (index) => void
+    this.onSelect = null;
+
+    this._bindEvents();
+  }
+
+  _bindEvents(){
+    this.el.toggleBtn.addEventListener('click', () => this.toggle());
+    this.el.closeBtn.addEventListener('click', () => this.close());
+    this.el.backdrop.addEventListener('click', () => this.close());
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Escape') this.close();
+    });
+  }
+
+  toggle(){
+    this.el.drawer.classList.contains('open') ? this.close() : this.open();
+  }
+
+  open(){
+    this.el.drawer.classList.add('open');
+    this.el.backdrop.classList.add('show');
+    this.el.toggleBtn.setAttribute('aria-expanded', 'true');
+  }
+
+  close(){
+    this.el.drawer.classList.remove('open');
+    this.el.backdrop.classList.remove('show');
+    this.el.toggleBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  render(activeIndex, durationCache = {}){
+    const list = this.el.list;
+    list.innerHTML = "";
+
+    this.episodes.forEach((ep, i) => {
+      const li = document.createElement('li');
+
+      const btn = document.createElement('button');
+      btn.className = 'episode' + (i === activeIndex ? ' active' : '');
+      btn.setAttribute('aria-label', 'Play ' + ep.title);
+      btn.innerHTML =
+        '<span class="episode-num">' + ep.num + '</span>' +
+        '<span class="episode-body">' +
+          '<span class="episode-title-row">' +
+            '<span class="episode-title">' + ep.title + '</span>' +
+            '<span class="episode-duration" data-id="' + ep.id + '">' + (durationCache[ep.id] || ep.durationLabel || '…') + '</span>' +
+          '</span>' +
+          (ep.date ? '<p class="episode-date">' + formatDate(ep.date) + '</p>' : '') +
+        '</span>';
+      btn.addEventListener('click', () => {
+        if (this.onSelect) this.onSelect(i);
+      });
+
+      const dl = document.createElement('a');
+      dl.className = 'icon-btn episode-download';
+      dl.href = ep.src;
+      dl.setAttribute('download', '');
+      dl.setAttribute('aria-label', 'Download ' + ep.title);
+      dl.title = 'Download';
+      dl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>';
+
+      li.appendChild(btn);
+      li.appendChild(dl);
+
+      const tracks = parseTracklist(ep.description);
+      if (tracks){
+        const section = document.createElement('div');
+        section.className = 'episode-extra';
+
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'tracklist-toggle';
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.innerHTML =
+          '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>' +
+          'Tracklist · ' + tracks.length + (tracks.length === 1 ? ' track' : ' tracks');
+
+        const ol = document.createElement('ol');
+        ol.className = 'episode-tracklist';
+        ol.hidden = true;
+        ol.innerHTML = tracks.map(t =>
+          '<li><span class="track-title">' + t.title + '</span>' +
+          (t.artist ? '<span class="track-artist">' + t.artist + '</span>' : '') +
+          '</li>'
+        ).join('');
+
+        toggle.addEventListener('click', () => {
+          const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+          toggle.setAttribute('aria-expanded', String(!isOpen));
+          ol.hidden = isOpen;
+        });
+
+        section.appendChild(toggle);
+        section.appendChild(ol);
+        li.appendChild(section);
+      } else if (ep.description){
+        const section = document.createElement('div');
+        section.className = 'episode-extra';
+        section.innerHTML = '<p class="episode-desc">' + ep.description + '</p>';
+        li.appendChild(section);
+      }
+
+      list.appendChild(li);
+    });
+  }
+
+  updateDuration(episodeId, label){
+    const el = this.el.list.querySelector('.episode-duration[data-id="' + episodeId + '"]');
+    if (el) el.textContent = label;
+  }
+}
+
+// ---- AudioPlayer.js ----
+
+// Owns the <audio> element and every control wired to it: play/pause,
+// seeking, skip 15s, speed, volume, saving/restoring playback position,
+// and probing each file's real duration. Doesn't know about the ticker,
+// the on-air light, or the episodes drawer directly — it reports what
+// happened through callbacks the app wires up:
+//
+//   onEpisodeChange(episode, index)   — a new episode was loaded
+//   onPlayStateChange(isPlaying, ep)  — play/pause was toggled
+//   onDurationResolved(episodeId, label) — a file's real length is known
+//   onStationEnded()  — an episode finished while in "station" mode
+//   onStationResume() — play was pressed, paused, while in "station" mode
+//
+// `mode` is either "archive" (normal, free browsing — the default)
+// or "station" (controlled by StationController, see below). This
+// class doesn't know HOW station mode computes what to play, it just
+// asks via those two callbacks instead of doing its own archive-style
+// auto-advance when mode is "station".
+class AudioPlayer {
+  constructor({ episodes, elements, storageKey = 'nightSignalPlayer' }){
+    this.episodes = episodes;
+    this.el = elements;
+    this.storageKey = storageKey;
+
+    this.speeds = [1, 1.25, 1.5, 1.75, 2, 0.75];
+    this.speedIndex = 0;
+    this.currentIndex = 0;
+    this.isScrubbing = false;
+    this.durationCache = {};    // formatted strings, e.g. "58:40" — for display
+    this.durationSeconds = {};  // raw numbers — for Station mode's math
+
+    this.mode = 'archive';
+
+    this.onEpisodeChange = null;
+    this.onPlayStateChange = null;
+    this.onDurationResolved = null;
+    this.onStationEnded = null;
+    this.onStationResume = null;
+
+    this._bindEvents();
+  }
+
+  setMode(mode){
+    this.mode = mode;
+  }
+
+  init(){
+    const hashId = window.location.hash ? window.location.hash.slice(1) : null;
+    const hashIndex = hashId ? this.episodes.findIndex(ep => ep.id === hashId) : -1;
+
+    if (hashIndex !== -1){
+      this.loadEpisode(hashIndex, false, 0);
+      this._probeDurations();
+      return;
+    }
+
+    const saved = this._loadState();
+    let startIndex = 0;
+    let startPosition = 0;
+
+    if (saved){
+      const found = this.episodes.findIndex(ep => ep.id === saved.episodeId);
+      if (found !== -1) startIndex = found;
+      startPosition = saved.position || 0;
+
+      if (typeof saved.volume === 'number'){
+        this.el.volume.value = saved.volume;
+        this.el.audio.volume = saved.volume;
+      }
+      if (typeof saved.speedIndex === 'number' && this.speeds[saved.speedIndex] !== undefined){
+        this.speedIndex = saved.speedIndex;
+        this.el.audio.playbackRate = this.speeds[this.speedIndex];
+        this.el.speedBtn.textContent = this.speeds[this.speedIndex] + "×";
+      }
+    }
+
+    this.loadEpisode(startIndex, false, startPosition);
+    this._probeDurations();
+  }
+
+  loadEpisode(index, autoplay, startPosition){
+    this.currentIndex = index;
+    const ep = this.episodes[index];
+    const { audio, npTitle, npSub, npError, scrub, timeTotal } = this.el;
+
+    npTitle.textContent = ep.title;
+    npSub.textContent = formatDate(ep.date);
+    npError.classList.remove('show');
+    npError.textContent = "";
+    audio.src = ep.src;
+    timeTotal.textContent = this.durationCache[ep.id] || ep.durationLabel || '…';
+    scrub.value = 0;
+    scrub.style.background = 'linear-gradient(to right, var(--accent) 0%, var(--track) 0%)';
+
+    if (typeof startPosition === 'number'){
+      audio.addEventListener('loadedmetadata', function once(){
+        audio.currentTime = startPosition;
+        audio.removeEventListener('loadedmetadata', once);
+      });
+    }
+
+    if (this.onEpisodeChange) this.onEpisodeChange(ep, index);
+
+    if (autoplay){
+      audio.play().catch(() => { /* needs a user gesture on some browsers */ });
+    }
+  }
+
+  togglePlay(){
+    const { audio } = this.el;
+    if (audio.paused){
+      if (this.mode === 'station' && this.onStationResume){
+        this.onStationResume();
+        return;
+      }
+      audio.play().catch(() => this._showError());
+    } else {
+      audio.pause();
+    }
+  }
+
+  _bindEvents(){
+    const { audio, playBtn, scrub, backBtn, fwdBtn, speedBtn, volume } = this.el;
+
+    playBtn.addEventListener('click', () => this.togglePlay());
+    audio.addEventListener('play', () => this._setPlayingUI(true));
+    audio.addEventListener('pause', () => this._setPlayingUI(false));
+    audio.addEventListener('timeupdate', () => this._onTimeUpdate());
+    audio.addEventListener('loadedmetadata', () => {
+      this.el.timeTotal.textContent = formatTime(audio.duration);
+    });
+    audio.addEventListener('ended', () => this._onEnded());
+    audio.addEventListener('error', () => this._showError());
+
+    scrub.addEventListener('mousedown', () => this.isScrubbing = true);
+    scrub.addEventListener('touchstart', () => this.isScrubbing = true);
+    scrub.addEventListener('input', () => this._onScrubInput());
+    scrub.addEventListener('change', () => this._commitScrub());
+    scrub.addEventListener('mouseup', () => this._commitScrub());
+    scrub.addEventListener('touchend', () => this._commitScrub());
+
+    backBtn.addEventListener('click', () => {
+      audio.currentTime = Math.max(0, audio.currentTime - 15);
+    });
+    fwdBtn.addEventListener('click', () => {
+      audio.currentTime = Math.min(audio.duration || Infinity, audio.currentTime + 15);
+    });
+
+    speedBtn.addEventListener('click', () => this._cycleSpeed());
+    volume.addEventListener('input', () => {
+      audio.volume = volume.value;
+      this._saveState();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code !== 'Space') return;
+      const tag = document.activeElement.tagName;
+      if (tag === 'BUTTON' || tag === 'INPUT' || tag === 'A') return;
+      e.preventDefault();
+      this.togglePlay();
+    });
+  }
+
+  _setPlayingUI(playing){
+    const { playIcon, pauseIcon, playBtn, nowPlaying } = this.el;
+    playIcon.style.display = playing ? 'none' : 'block';
+    pauseIcon.style.display = playing ? 'block' : 'none';
+    playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+    nowPlaying.classList.toggle('playing', playing);
+
+    if (this.onPlayStateChange){
+      this.onPlayStateChange(playing, this.episodes[this.currentIndex]);
+    }
+  }
+
+  _onTimeUpdate(){
+    if (this.isScrubbing) return;
+    const { audio, timeElapsed, scrub } = this.el;
+    timeElapsed.textContent = formatTime(audio.currentTime);
+    if (audio.duration){
+      const pct = (audio.currentTime / audio.duration) * 100;
+      scrub.value = pct;
+      scrub.style.background = 'linear-gradient(to right, var(--accent) ' + pct + '%, var(--track) ' + pct + '%)';
+    }
+    this._saveState();
+  }
+
+  _onEnded(){
+    if (this.mode === 'station'){
+      if (this.onStationEnded) this.onStationEnded();
+      return;
+    }
+    if (this.currentIndex > 0){
+      this.loadEpisode(this.currentIndex - 1, true);
+    } else {
+      this._setPlayingUI(false);
+    }
+  }
+
+  _showError(){
+    const ep = this.episodes[this.currentIndex];
+    const { npError } = this.el;
+    npError.textContent = "Couldn't load this episode. Make sure " + ep.src + " is next to this page.";
+    npError.classList.add('show');
+  }
+
+  _onScrubInput(){
+    const { scrub, audio, timeElapsed } = this.el;
+    const pct = scrub.value;
+    scrub.style.background = 'linear-gradient(to right, var(--accent) ' + pct + '%, var(--track) ' + pct + '%)';
+    if (audio.duration){
+      timeElapsed.textContent = formatTime((pct / 100) * audio.duration);
+    }
+  }
+
+  _commitScrub(){
+    const { scrub, audio } = this.el;
+    if (audio.duration){
+      audio.currentTime = (scrub.value / 100) * audio.duration;
+    }
+    this.isScrubbing = false;
+  }
+
+  _cycleSpeed(){
+    const { audio, speedBtn } = this.el;
+    this.speedIndex = (this.speedIndex + 1) % this.speeds.length;
+    audio.playbackRate = this.speeds[this.speedIndex];
+    speedBtn.textContent = this.speeds[this.speedIndex] + "×";
+    this._saveState();
+  }
+
+  _saveState(){
+    try{
+      localStorage.setItem(this.storageKey, JSON.stringify({
+        episodeId: this.episodes[this.currentIndex].id,
+        position: this.el.audio.currentTime || 0,
+        volume: this.el.audio.volume,
+        speedIndex: this.speedIndex
+      }));
+    }catch(e){ /* storage unavailable, skip silently */ }
+  }
+
+  _loadState(){
+    try{
+      const raw = localStorage.getItem(this.storageKey);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  }
+
+  _probeDurations(){
+    this.episodes.forEach(ep => {
+      const probe = new Audio();
+      probe.preload = 'metadata';
+      probe.addEventListener('loadedmetadata', () => {
+        const seconds = probe.duration;
+        const label = formatTime(seconds);
+        this.durationCache[ep.id] = label;
+        this.durationSeconds[ep.id] = seconds;
+        if (this.onDurationResolved) this.onDurationResolved(ep.id, label);
+        if (this.episodes[this.currentIndex].id === ep.id){
+          this.el.timeTotal.textContent = label;
+        }
+      });
+      probe.addEventListener('error', () => {
+        // known-bad: resolved, but excluded from Station's loop math
+        this.durationSeconds[ep.id] = 0;
+      });
+      probe.src = ep.src;
+    });
+  }
+}
+
+// ---- StationController.js ----
+
+// The "live radio" mode. Treats the whole EPISODES list as one
+// continuous loop and uses the real clock (same clock every visitor's
+// device already agrees on) to figure out which episode should be
+// playing right now, and exactly where in it. No server needed —
+// everyone's browser does the same math independently and lands on
+// the same answer.
+//
+//   position_in_loop = (seconds since Jan 1 1970 UTC) % (total runtime)
+//
+// Then it walks the episode list subtracting durations until it finds
+// which one that position falls inside.
+class StationController {
+  constructor({ episodes, player, elements }){
+    this.episodes = episodes;
+    this.player = player;
+    this.el = elements; // { toggleBtn, toggleLabel, nowPlaying }
+    this.active = false;
+    this._pendingRetry = null;
+
+    this.el.toggleBtn.addEventListener('click', () => {
+      if (this.active) this.disable(); else this.enable();
+    });
+
+    player.onStationEnded = () => {
+      if (this.active) this._syncToNow(true);
+    };
+    player.onStationResume = () => {
+      if (this.active) this._syncToNow(true);
+    };
+
+    document.addEventListener('visibilitychange', () => {
+      if (this.active && document.visibilityState === 'visible'){
+        this._syncToNow(!this.player.el.audio.paused);
+      }
+    });
+  }
+
+  enable(){
+    this.active = true;
+    this.player.setMode('station');
+    this.el.toggleBtn.setAttribute('aria-pressed', 'true');
+    this.el.toggleLabel.textContent = 'Tuned In';
+    this.el.nowPlaying.classList.add('station');
+    this._syncToNow(true);
+  }
+
+  disable(){
+    this.active = false;
+    if (this._pendingRetry) clearTimeout(this._pendingRetry);
+    this.player.setMode('archive');
+    this.el.toggleBtn.setAttribute('aria-pressed', 'false');
+    this.el.toggleLabel.textContent = 'Tune In';
+    this.el.nowPlaying.classList.remove('station');
+    this.player.el.audio.pause();
+  }
+
+  _allResolved(){
+    return this.episodes.every(ep => this.player.durationSeconds[ep.id] !== undefined);
+  }
+
+  _readyEpisodes(){
+    return this.episodes
+      .map((ep, i) => ({ i, dur: this.player.durationSeconds[ep.id] }))
+      .filter(x => typeof x.dur === 'number' && x.dur > 0);
+  }
+
+  _computePosition(){
+    if (!this._allResolved()) return null;
+    const ready = this._readyEpisodes();
+    if (!ready.length) return { error: true };
+
+    const total = ready.reduce((sum, x) => sum + x.dur, 0);
+    const nowSec = Date.now() / 1000;
+    const posInLoop = nowSec % total;
+
+    let cursor = 0;
+    for (const x of ready){
+      if (posInLoop < cursor + x.dur){
+        return { index: x.i, offset: posInLoop - cursor };
+      }
+      cursor += x.dur;
+    }
+    const last = ready[ready.length - 1];
+    return { index: last.i, offset: Math.max(0, last.dur - 0.25) };
+  }
+
+  _syncToNow(autoplay){
+    if (this._pendingRetry) clearTimeout(this._pendingRetry);
+    const pos = this._computePosition();
+
+    if (!pos){
+      this.player.el.npTitle.textContent = 'Tuning in…';
+      this.player.el.npSub.textContent = '';
+      this._pendingRetry = setTimeout(() => {
+        if (this.active) this._syncToNow(autoplay);
+      }, 400);
+      return;
+    }
+
+    if (pos.error){
+      this.player.el.npTitle.textContent = 'Station unavailable';
+      this.player.el.npSub.textContent = 'Couldn\u2019t load any episodes right now.';
+      return;
+    }
+
+    this.player.loadEpisode(pos.index, autoplay, pos.offset);
+  }
+}
+
+// ---- MediaSessionController.js ----
+// Lock-screen / media-key integration. Shows the episode title and
+// artwork on the phone's lock screen, and wires hardware/bluetooth
+// play, pause, skip, and seek buttons to the player. Seek and
+// prev/next track are ignored while Station mode is active, since
+// skipping around doesn't make sense on a live stream.
+class MediaSessionController {
+  constructor({ audioEl, player, episodes, artworkSrc }){
+    this.audio = audioEl;
+    this.player = player;
+    this.episodes = episodes;
+    this.artworkSrc = artworkSrc;
+    this._setup();
+  }
+
+  _setup(){
+    if (!('mediaSession' in navigator)) return;
+    navigator.mediaSession.setActionHandler('play', () => this.player.togglePlay());
+    navigator.mediaSession.setActionHandler('pause', () => this.player.togglePlay());
+    navigator.mediaSession.setActionHandler('seekbackward', (d) => {
+      if (this.player.mode === 'station') return;
+      this.audio.currentTime = Math.max(0, this.audio.currentTime - (d.seekOffset || 15));
+    });
+    navigator.mediaSession.setActionHandler('seekforward', (d) => {
+      if (this.player.mode === 'station') return;
+      this.audio.currentTime = Math.min(this.audio.duration || Infinity, this.audio.currentTime + (d.seekOffset || 15));
+    });
+    navigator.mediaSession.setActionHandler('previoustrack', () => this._goTo(-1));
+    navigator.mediaSession.setActionHandler('nexttrack', () => this._goTo(1));
+    this.audio.addEventListener('timeupdate', () => this._updatePosition());
+  }
+
+  _goTo(offset){
+    if (this.player.mode === 'station') return;
+    const next = this.player.currentIndex + offset;
+    if (next >= 0 && next < this.episodes.length){
+      this.player.loadEpisode(next, true);
+    }
+  }
+
+  updateMetadata(episode){
+    if (!('mediaSession' in navigator)) return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: episode.title,
+      artist: CONFIG.showName,
+      album: CONFIG.showName,
+      artwork: [{ src: this.artworkSrc, sizes: '512x512', type: 'image/jpeg' }]
+    });
+  }
+
+  updatePlaybackState(isPlaying){
+    if (!('mediaSession' in navigator)) return;
+    navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+  }
+
+  _updatePosition(){
+    if (!('mediaSession' in navigator) || !('setPositionState' in navigator.mediaSession)) return;
+    if (this.player.mode === 'station') return;
+    if (!isFinite(this.audio.duration)) return;
+    try{
+      navigator.mediaSession.setPositionState({
+        duration: this.audio.duration,
+        playbackRate: this.audio.playbackRate,
+        position: this.audio.currentTime
+      });
+    }catch(e){ /* some browsers are picky about exact ranges, safe to ignore */ }
+  }
+}
+
+// ---- app.js ----
+// Apply show name / tagline to the static bits of the page.
+document.title = CONFIG.showName + " — player";
+document.querySelector('.page-heading').textContent = CONFIG.showName;
+document.getElementById('heroImgA').alt = CONFIG.showName + ", a night city skyline";
+document.querySelector('.masthead-wordmark').textContent = CONFIG.showName;
+
+// ---- Build each piece ----
+
+const ticker = new Ticker(document.getElementById('tickerTrack'));
+
+const onAir = new OnAirIndicator(
+  document.getElementById('onAir'),
+  document.getElementById('onAirLabel')
+);
+
+const drawer = new EpisodesDrawer({
+  episodes: EPISODES,
+  elements: {
+    toggleBtn: document.getElementById('drawerToggle'),
+    closeBtn: document.getElementById('drawerClose'),
+    drawer: document.getElementById('episodesDrawer'),
+    backdrop: document.getElementById('drawerBackdrop'),
+    list: document.getElementById('episodeList')
+  }
+});
+
+const player = new AudioPlayer({
+  episodes: EPISODES,
+  elements: {
+    audio: document.getElementById('audio'),
+    playBtn: document.getElementById('playBtn'),
+    playIcon: document.getElementById('playIcon'),
+    pauseIcon: document.getElementById('pauseIcon'),
+    npTitle: document.getElementById('npTitle'),
+    npSub: document.getElementById('npSub'),
+    npError: document.getElementById('npError'),
+    nowPlaying: document.getElementById('nowPlaying'),
+    scrub: document.getElementById('scrub'),
+    timeElapsed: document.getElementById('timeElapsed'),
+    timeTotal: document.getElementById('timeTotal'),
+    backBtn: document.getElementById('backBtn'),
+    fwdBtn: document.getElementById('fwdBtn'),
+    speedBtn: document.getElementById('speedBtn'),
+    volume: document.getElementById('volume')
+  }
+});
+
+const mediaSession = new MediaSessionController({
+  audioEl: document.getElementById('audio'),
+  player,
+  episodes: EPISODES,
+  artworkSrc: 'images/cover.jpg'
+});
+
+const station = new StationController({
+  episodes: EPISODES,
+  player,
+  elements: {
+    toggleBtn: document.getElementById('stationToggle'),
+    toggleLabel: document.querySelector('#stationToggle .station-toggle-label'),
+    nowPlaying: document.getElementById('nowPlaying')
+  }
+});
+
+const heroImgA = document.getElementById('heroImgA');
+const heroImgB = document.getElementById('heroImgB');
+
+const heroRotator = new HeroRotator(HERO_IMAGES, { front: heroImgA, back: heroImgB }, HERO_ROTATE_MS);
+
+const heroDrift = new HeroDrift([heroImgA, heroImgB], {
+  scaleRange: [1.05, 1.9],
+  xRange: [-2.5, 2.5],
+  yRange: [-1.5, 1.5],
+  durationRange: [8, 14]
+});
+
+// ---- Wire them together ----
+// Each class only knows about its own DOM. Cross-piece reactions
+// (ticker text, on-air light, drawer highlight) happen here.
+
+player.onEpisodeChange = (episode, index) => {
+  drawer.render(index, player.durationCache);
+  mediaSession.updateMetadata(episode);
+  // Don't rewrite the URL hash while Station mode is picking episodes
+  // automatically — that hash is meant for deliberate direct links.
+  if (player.mode !== 'station' && history.replaceState){
+    history.replaceState(null, '', '#' + episode.id);
+  }
+};
+
+player.onPlayStateChange = (isPlaying, episode) => {
+  onAir.setLive(isPlaying);
+  ticker.set(isPlaying ? ('Now playing — ' + episode.title) : CONFIG.tagline);
+  mediaSession.updatePlaybackState(isPlaying);
+};
+
+player.onDurationResolved = (episodeId, label) => {
+  drawer.updateDuration(episodeId, label);
+};
+
+drawer.onSelect = (index) => {
+  // Picking a specific episode always means "take me out of the live
+  // station and play exactly this."
+  if (station.active) station.disable();
+  player.loadEpisode(index, true);
+};
+
+// Clicking anywhere on the hero (the photo/gif itself) toggles play/pause,
+// but not when the click actually landed on the player bar or the
+// Episodes button, those already handle their own clicks.
+document.querySelector('.stage').addEventListener('click', (e) => {
+  if (e.target.closest('.now-playing, .drawer-toggle')) return;
+  player.togglePlay();
+});
+
+// ---- Go ----
+
+ticker.set(CONFIG.tagline);
+player.init();
+heroRotator.start();
+heroDrift.start();
+</script>
+
+</body>
+</html>
